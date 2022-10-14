@@ -7,16 +7,18 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
-interface IIssues {
-  node: {
-    id: number;
-    title: string;
-    url: string;
-    closed: boolean;
-  };
+export interface IIssue {
+  id: number;
+  title: string;
+  url: string;
+  closed: boolean;
 }
 
-export const handler = async () => {
+interface INode {
+  node: IIssue;
+}
+
+export const queryApi = async () => {
   const httpLink: ApolloLink = createHttpLink({
     uri: 'https://api.github.com/graphql',
   });
@@ -61,7 +63,7 @@ export const handler = async () => {
     `,
   });
 
-  const issues = edges.map(({ node }: IIssues) => node);
+  const issues: IIssue[] = edges.map(({ node }: INode) => node);
 
-  console.log('issues', issues);
+  return issues;
 };
