@@ -9,6 +9,7 @@ const Home: NextPage = () => {
     variables: {
       first: 10,
     },
+    notifyOnNetworkStatusChange: true,
   });
 
   const { endCursor, hasNextPage } = data?.repository?.issues?.pageInfo || {};
@@ -45,6 +46,29 @@ const Home: NextPage = () => {
           );
         })}
       </ul>
+
+      {hasNextPage && (
+        <button
+          onClick={() =>
+            fetchMore({
+              variables: { after: endCursor },
+              updateQuery: (_prevResult, { fetchMoreResult }) => {
+                const { repository } = fetchMoreResult;
+
+                setIssues(
+                  repository.issues.edges.map(({ node }: INode) => node)
+                );
+
+                return fetchMoreResult;
+              },
+            })
+          }
+        >
+          More
+        </button>
+      )}
+
+      {loading && <p>Loading...</p>}
     </div>
   );
 };
