@@ -24,10 +24,23 @@ const Home: NextPage = () => {
     if (!issues) {
       setIssues(allIssues);
     }
+  });
+
+  const filterIssues = (key: string) => {
+    key === 'closed'
+      ? setIssues(allIssues.filter((issue: IIssue) => issue.closed))
+      : key === 'open'
+      ? setIssues(allIssues.filter((issue: IIssue) => !issue.closed))
+      : setIssues(allIssues);
+  };
 
   return (
     <div className={styles.container}>
       <h1>Reactjs issues</h1>
+
+      <button onClick={() => filterIssues('all')}>All</button>
+      <button onClick={() => filterIssues('closed')}>Closed</button>
+      <button onClick={() => filterIssues('open')}>Open</button>
 
       <ul>
         {issues?.map((issue: IIssue) => {
