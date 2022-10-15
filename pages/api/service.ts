@@ -14,56 +14,46 @@ export interface IIssue {
   closed: boolean;
 }
 
-interface INode {
+export interface INode {
   node: IIssue;
 }
 
-export const queryApi = async () => {
-  const httpLink: ApolloLink = createHttpLink({
-    uri: 'https://api.github.com/graphql',
-  });
+const httpLink: ApolloLink = createHttpLink({
+  uri: 'https://api.github.com/graphql',
+});
 
-  const authLink: ApolloLink = setContext((_, { headers }) => {
-    // return the headers to the context so httpLink can read them
-    return {
-      headers: {
-        ...headers,
-        authorization: `Bearer ${process.env.GITHUB_PAT}`,
-      },
-    };
-  });
-
-  const client = new ApolloClient({
-    link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
-  });
-
-  const {
-    data: {
-      repository: {
-        issues: { edges },
-      },
+const authLink: ApolloLink = setContext((_, { headers }) => {
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: `Bearer ${process.env.GITHUB_PAT}`,
     },
-  } = await client.query({
-    query: gql`
-      {
-        repository(name: "reactjs.org", owner: "reactjs") {
-          issues(first: 20) {
-            edges {
-              node {
-                id
-                title
-                url
-                closed
-              }
-            }
+  };
+});
+
+export const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+
+export const ISSUES_QUERY = gql`
+  query MyQuery($first: Int, $after: String) {
+    repository(name: "reactjs.org", owner: "reactjs") {
+      issues(first: $first, after: $after) {
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+        edges {
+          node {
+            closed
+            id
+            title
+            url
           }
         }
       }
-    `,
-  });
-
-  const issues: IIssue[] = edges.map(({ node }: INode) => node);
-
-  return issues;
-};
+    }
+  }
+`;
